@@ -1,81 +1,146 @@
 #include <stdio.h>
+#include <stdlib.h> // Para abs()
 
 // Desafio Batalha Naval - MateCheck
 // Este código inicial serve como base para o desenvolvimento do sistema de Batalha Naval.
 // Siga os comentários para implementar cada parte do desafio.
 
 // Desenvolvido por Edison Antonio - 30/07/2025
-void imprimirMatriz(int matriz[5][5], const char *nome)
+
+#define TAM_TAB 10
+#define TAM_HAB 5
+#define AGUA 0
+#define NAVIO 3
+#define CONE 5
+#define CRUZ 6
+#define OCTAEDRO 7
+
+void inicializarTabuleiro(int tabuleiro[TAM_TAB][TAM_TAB])
 {
-    printf("\n🔥 Habilidade: %s\n\n", nome);
-    for (int i = 0; i < 5; i++)
+    for (int i = 0; i < TAM_TAB; i++)
+        for (int j = 0; j < TAM_TAB; j++)
+            tabuleiro[i][j] = AGUA;
+}
+
+void imprimirTabuleiro(int tabuleiro[TAM_TAB][TAM_TAB])
+{
+    printf("\nTabuleiro Final:\n\n");
+    for (int i = 0; i < TAM_TAB; i++)
     {
-        for (int j = 0; j < 5; j++)
+        for (int j = 0; j < TAM_TAB; j++)
         {
-            printf("%d ", matriz[i][j]);
+            printf("%d ", tabuleiro[i][j]);
         }
         printf("\n");
     }
 }
 
-void habilidadeCone(int matriz[5][5])
+void posicionarNavios(int tabuleiro[TAM_TAB][TAM_TAB])
 {
-    // Zera a matriz
-    for (int i = 0; i < 5; i++)
-        for (int j = 0; j < 5; j++)
-            matriz[i][j] = 0;
+    // Navio horizontal
+    for (int i = 0; i < 4; i++)
+        tabuleiro[2][1 + i] = NAVIO;
 
-    // Formato de cone
-    matriz[0][2] = 1;
-    matriz[1][1] = matriz[1][2] = matriz[1][3] = 1;
-    for (int j = 0; j < 5; j++)
-        matriz[2][j] = 1;
+    // Navio vertical
+    for (int i = 0; i < 3; i++)
+        tabuleiro[5 + i][6] = NAVIO;
+
+    // Diagonal ↘
+    for (int i = 0; i < 4; i++)
+        tabuleiro[i][i] = NAVIO;
+
+    // Diagonal ↙
+    for (int i = 0; i < 4; i++)
+        tabuleiro[i][9 - i] = NAVIO;
 }
 
-void habilidadeCruz(int matriz[5][5])
+void habilidadeCone(int matriz[TAM_HAB][TAM_HAB])
 {
-    // Zera a matriz
-    for (int i = 0; i < 5; i++)
-        for (int j = 0; j < 5; j++)
-            matriz[i][j] = 0;
-
-    // Cruz
-    for (int j = 0; j < 5; j++)
-        matriz[1][j] = 1;
-
-    matriz[0][2] = 1;
-    matriz[1][2] = 1;
-    matriz[2][2] = 1;
+    int centro = TAM_HAB / 2;
+    for (int i = 0; i < TAM_HAB; i++)
+    {
+        for (int j = 0; j < TAM_HAB; j++)
+        {
+            if (i >= centro && abs(j - centro) <= i - centro)
+                matriz[i][j] = 1;
+            else
+                matriz[i][j] = 0;
+        }
+    }
 }
 
-void habilidadeOctaedro(int matriz[5][5])
+void habilidadeCruz(int matriz[TAM_HAB][TAM_HAB])
 {
-    // Zera a matriz
-    for (int i = 0; i < 5; i++)
-        for (int j = 0; j < 5; j++)
-            matriz[i][j] = 0;
+    int centro = TAM_HAB / 2;
+    for (int i = 0; i < TAM_HAB; i++)
+    {
+        for (int j = 0; j < TAM_HAB; j++)
+        {
+            if (i == centro || j == centro)
+                matriz[i][j] = 1;
+            else
+                matriz[i][j] = 0;
+        }
+    }
+}
 
-    // Octaedro
-    matriz[0][2] = 1;
-    matriz[1][1] = matriz[1][2] = matriz[1][3] = 1;
-    matriz[2][2] = 1;
+void habilidadeOctaedro(int matriz[TAM_HAB][TAM_HAB])
+{
+    int centro = TAM_HAB / 2;
+    for (int i = 0; i < TAM_HAB; i++)
+    {
+        for (int j = 0; j < TAM_HAB; j++)
+        {
+            if (abs(i - centro) + abs(j - centro) <= centro)
+                matriz[i][j] = 1;
+            else
+                matriz[i][j] = 0;
+        }
+    }
+}
+
+void aplicarHabilidade(int tabuleiro[TAM_TAB][TAM_TAB], int matrizHabilidade[TAM_HAB][TAM_HAB], int origemLinha, int origemColuna, int codigoHabilidade)
+{
+    for (int i = 0; i < TAM_HAB; i++)
+    {
+        for (int j = 0; j < TAM_HAB; j++)
+        {
+            if (matrizHabilidade[i][j] == 1)
+            {
+                int x = origemLinha + i;
+                int y = origemColuna + j;
+                if (x >= 0 && x < TAM_TAB && y >= 0 && y < TAM_TAB)
+                {
+                    if (tabuleiro[x][y] == AGUA)
+                    {
+                        tabuleiro[x][y] = codigoHabilidade;
+                    }
+                }
+            }
+        }
+    }
 }
 
 int main()
 {
-    int matriz[5][5];
+    int tabuleiro[TAM_TAB][TAM_TAB];
+    int cone[TAM_HAB][TAM_HAB];
+    int cruz[TAM_HAB][TAM_HAB];
+    int octaedro[TAM_HAB][TAM_HAB];
 
-    // Habilidade Cone
-    habilidadeCone(matriz);
-    imprimirMatriz(matriz, "CONE");
+    inicializarTabuleiro(tabuleiro);
+    posicionarNavios(tabuleiro);
 
-    // Habilidade Cruz
-    habilidadeCruz(matriz);
-    imprimirMatriz(matriz, "CRUZ");
+    habilidadeCone(cone);
+    habilidadeCruz(cruz);
+    habilidadeOctaedro(octaedro);
 
-    // Habilidade Octaedro
-    habilidadeOctaedro(matriz);
-    imprimirMatriz(matriz, "OCTAEDRO");
+    // Aplicando habilidades em pontos diferentes do tabuleiro
+    aplicarHabilidade(tabuleiro, cone, 4, 2, CONE);         // Aplica cone a partir de (4,2)
+    aplicarHabilidade(tabuleiro, cruz, 0, 3, CRUZ);         // Aplica cruz a partir de (0,3)
+    aplicarHabilidade(tabuleiro, octaedro, 5, 5, OCTAEDRO); // Aplica octaedro a partir de (5,5)
+
+    imprimirTabuleiro(tabuleiro);
 
     return 0;
 }
